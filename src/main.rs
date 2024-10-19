@@ -9,6 +9,7 @@ mod model;
 mod patterns;
 mod handlers;
 
+
 #[tokio::main]
 async fn main() -> Result<(), async_nats::Error> {
     match dotenv() {
@@ -43,6 +44,7 @@ async fn main() -> Result<(), async_nats::Error> {
     };
 
     info!("Handler started");
+    let mut rcon_last = "".to_string();
     while let Some(message) = subscriber.next().await {
         let msg: MsgHandler = match std::str::from_utf8(&message.payload) {
             Ok(json_string) => serde_json::from_str(json_string).unwrap_or_else(|err| {
@@ -71,13 +73,14 @@ async fn main() -> Result<(), async_nats::Error> {
                 _ => {continue}
             };
 
+
             if value.is_empty() {
                 continue;
             }
 
             let send_msg = Msg {
                 server_name: msg.server_name.clone(),
-                rcon: value.to_string(),
+                rcon: value.clone().to_string(),
             };
 
             let json = match serde_json::to_string_pretty(&send_msg) {
@@ -85,10 +88,22 @@ async fn main() -> Result<(), async_nats::Error> {
                 Err(err) => {error!("Json Serialize Error: {}", err); break}
             };
 
+            if rcon_last == value.clone() {
+                continue;
+            }
+
             debug!("sended to teesports.events: {}", json);
             js.publish("teesports.events", json.into())
                 .await
-                .expect("Error publish message to teesports.messages");
+                .expect("Error publish message to teesports.events");
+
+            debug!("sended to teesports.moderator: {}", &value);
+            js.publish("teesports.moderator", value.clone().into())
+                .await
+                .expect("Error publish message to teesports.moderator");
+
+            rcon_last = value;
+
             break
         }
     }
