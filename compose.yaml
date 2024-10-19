@@ -1,0 +1,13 @@
+services:
+  nats:
+    image: nats:latest
+    command: "-js"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  util:
+    build: .
+    environment:
+      RUST_LOG: INFO
+      nats_server: nats://nats:4222
