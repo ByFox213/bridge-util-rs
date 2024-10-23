@@ -29,7 +29,7 @@ async fn main() -> Result<(), async_nats::Error> {
     };
     let js = async_nats::jetstream::new(nc.clone());
 
-    let mut subscriber = nc.queue_subscribe("tw.handler", "util".to_string()).await?;
+    let mut subscriber = nc.queue_subscribe("tw.econ.read.*", "util".to_string()).await?;
     let commands = if env.commands.is_some() {
         env.commands.clone().unwrap()
     } else {
@@ -97,8 +97,8 @@ async fn main() -> Result<(), async_nats::Error> {
                 .await
                 .expect("Error publish message to tw.events");
 
-            debug!("sended to tw.moderator: {}", &value);
-            js.publish("tw.moderator", value.clone().into())
+            debug!("sended to tw.econ.moderator: {}", &value);
+            js.publish("tw.econ.moderator", value.clone().into())
                 .await
                 .expect("Error publish message to tw.moderator");
 
