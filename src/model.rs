@@ -44,7 +44,7 @@ pub struct Env {
     pub nats_server: String,
     pub nats_user: Option<String>,
     pub nats_password: Option<String>,
-    pub commands: Option<Vec<String>>,
+    pub commands: Option<Vec<String>>
 }
 
 pub struct RegexModel<'a> {
@@ -68,6 +68,20 @@ impl Env {
         read_yaml_file("config.yaml")
     }
 
+    pub fn get_commands(&self) -> Vec<String> {
+        if self.commands.is_some() {
+            self.commands.clone().unwrap()
+        } else {
+            vec!(
+                "ban_range".to_string(),
+                "ban".to_string(),
+                "unban".to_string(),
+                "kick".to_string(),
+                "muteid".to_string(),
+                "muteip".to_string()
+            )
+        }
+    }
     pub async fn connect_nats(&self) -> Result<Client, NatsError> {
         let nats_user = self.nats_user.clone();
         let nats_password = self.nats_password.clone();
