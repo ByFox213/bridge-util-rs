@@ -1,5 +1,4 @@
 use std::process::exit;
-use dotenv::dotenv;
 use futures::StreamExt;
 use log::{info, error, debug};
 use crate::model::{Env, Msg, MsgHandler};
@@ -12,10 +11,6 @@ mod handlers;
 
 #[tokio::main]
 async fn main() -> Result<(), async_nats::Error> {
-    match dotenv() {
-        Ok(_) => {}
-        Err(err) => {error!("Failed open file config.yaml: {}", err)}
-    };
     let env = Env::get_yaml().expect("error load yaml file");
     env_logger::init();
 
